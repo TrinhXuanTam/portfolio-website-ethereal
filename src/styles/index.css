@@ -1,0 +1,371 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --page-bg: #f3f1eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Lenis manages scroll; keep native anchor jumps smooth as fallback */
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: var(--page-bg);
+  color: theme('colors.graphite');
+  font-family: theme('fontFamily.sans');
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Lenis smooth-scroll wiring */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* The fixed WebGL canvas layer sits behind all DOM */
+.canvas-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dom-layer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ultra-refined glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 1px 1px rgba(43, 42, 40, 0.02),
+    0 8px 40px rgba(43, 42, 40, 0.06);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 1px 1px rgba(43, 42, 40, 0.03),
+    0 12px 50px rgba(43, 42, 40, 0.08);
+}
+
+/* Timeline rows animate in on mount (used where content loads asynchronously
+   and may already be in view — a scroll trigger can't be relied on there). */
+.row-rise {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(6px);
+  animation: row-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes row-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-rise {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Skeleton placeholder shimmer (shown while CMS data loads) */
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    rgba(139, 138, 133, 0.10) 30%,
+    rgba(139, 138, 133, 0.20) 50%,
+    rgba(139, 138, 133, 0.10) 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Fullscreen gallery lightbox entrance */
+.lightbox-fade {
+  animation: lightbox-fade 300ms ease both;
+}
+.lightbox-img {
+  animation: lightbox-pop 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes lightbox-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes lightbox-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Route transition — each letter of the destination label rises into view
+   from behind a mask, with a soft blur clearing as it settles. */
+.route-letter {
+  transform: translateY(110%);
+  opacity: 0;
+  filter: blur(4px);
+  animation: route-letter-up 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes route-letter-up {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-letter {
+    animation: none;
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* Breathing pulse shown during the route-change veil */
+.route-pulse {
+  animation: route-pulse 1s ease-in-out infinite;
+  transition: opacity 0.3s ease;
+}
+@keyframes route-pulse {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+/* Horizontal kinetic keyword rows — alternating directions per row */
+.marquee-l {
+  animation: marquee-l 42s linear infinite;
+}
+.marquee-r {
+  animation: marquee-r 38s linear infinite;
+}
+@keyframes marquee-l {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-r {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+/* Fade the words in/out at the edges by masking the container itself, so the
+   liquid background shows through cleanly (no opaque colour band). */
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-l,
+  .marquee-r {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Auto-advance progress fill inside the active Services selector tick */
+@keyframes svc-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Huge ghost number behind the active service — eases in on each change */
+.ghost-num {
+  animation: ghost-in 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes ghost-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.94);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 0.6;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ghost-num {
+    animation: none;
+  }
+}
+
+/* Soft morphing aura for the Services section — organic shape + slow drift */
+.blob-morph {
+  border-radius: 60% 40% 55% 45% / 55% 50% 50% 45%;
+  animation: blob-a 14s ease-in-out infinite alternate;
+}
+.blob-morph-2 {
+  border-radius: 45% 55% 50% 50% / 50% 45% 55% 50%;
+  animation: blob-b 11s ease-in-out infinite alternate;
+}
+@keyframes blob-a {
+  0% {
+    border-radius: 60% 40% 55% 45% / 55% 50% 50% 45%;
+    transform: translate3d(-4%, -2%, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    border-radius: 50% 55% 40% 60% / 45% 55% 45% 55%;
+    transform: translate3d(3%, 3%, 0) rotate(12deg) scale(1.06);
+  }
+  100% {
+    border-radius: 55% 45% 60% 40% / 60% 45% 55% 40%;
+    transform: translate3d(-2%, 4%, 0) rotate(-8deg) scale(0.97);
+  }
+}
+@keyframes blob-b {
+  0% {
+    border-radius: 45% 55% 50% 50% / 50% 45% 55% 50%;
+    transform: translate3d(4%, 2%, 0) rotate(0deg);
+  }
+  100% {
+    border-radius: 55% 45% 45% 55% / 45% 55% 45% 55%;
+    transform: translate3d(-5%, -3%, 0) rotate(-14deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blob-morph,
+  .blob-morph-2 {
+    animation: none;
+  }
+}
+
+/* Slowly drifting sheen inside the service panels so the gradient feels alive */
+.service-flow {
+  background:
+    radial-gradient(40% 40% at 30% 30%, rgba(255, 255, 255, 0.5), transparent 70%),
+    radial-gradient(45% 45% at 70% 75%, rgba(255, 255, 255, 0.35), transparent 70%);
+  background-size: 180% 180%;
+  animation: service-drift 16s ease-in-out infinite alternate;
+}
+@keyframes service-drift {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .service-flow {
+    animation: none;
+  }
+}
+
+/* Text reveal helper — used by scroll materialize */
+.will-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(6px);
+}
+
+/* Custom thin scrollbar to match minimalism */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 138, 133, 0.35);
+  border-radius: 999px;
+}
+
+::selection {
+  background: rgba(183, 196, 176, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .will-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
