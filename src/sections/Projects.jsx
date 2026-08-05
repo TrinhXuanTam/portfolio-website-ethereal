@@ -78,10 +78,17 @@ function ProjectRow({ p, index }) {
                   src={p.thumbnail}
                   alt={p.name}
                   loading="lazy"
-                  className="h-full w-full object-cover transition-all duration-[1.1s] ease-ethereal"
+                  className="h-full w-full object-cover ease-ethereal"
                   style={{
-                    filter: active ? 'grayscale(0) saturate(1)' : 'grayscale(1)',
+                    // Only transition the two properties we animate (not `all`),
+                    // and isolate the image on its own compositor layer so the
+                    // grayscale->color rasterization doesn't jank the main
+                    // thread / shader during the pop.
+                    transition: 'filter 1.1s, transform 1.1s',
+                    filter: active ? 'grayscale(0)' : 'grayscale(1)',
                     transform: active ? 'scale(1.04)' : 'scale(1)',
+                    willChange: 'filter, transform',
+                    backfaceVisibility: 'hidden',
                   }}
                 />
                 {/* soft sage tint that clears as the panel becomes active */}
@@ -123,7 +130,7 @@ function ProjectRow({ p, index }) {
               {p.tags.map((t) => (
                 <li
                   key={t}
-                  className="glass rounded-full px-4 py-1.5 text-xs uppercase tracking-widest text-graphite/70"
+                  className="pill rounded-full px-4 py-1.5 text-xs uppercase tracking-widest text-graphite/70"
                 >
                   {t}
                 </li>

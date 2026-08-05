@@ -11,19 +11,29 @@ const prefersReduced =
  */
 export default function Magnetic({ children, strength = 0.35, className = '' }) {
   const ref = useRef(null)
+  const rectRef = useRef(null)
+  const setters = useRef(null)
+
+  const onEnter = useCallback(() => {
+    if (prefersReduced || !ref.current) return
+    rectRef.current = ref.current.getBoundingClientRect()
+    if (!setters.current) {
+      const cfg = { duration: 0.9, ease: 'power3.out' }
+      setters.current = {
+        x: gsap.quickTo(ref.current, 'x', cfg),
+        y: gsap.quickTo(ref.current, 'y', cfg),
+      }
+    }
+  }, [])
 
   const onMove = useCallback(
     (e) => {
-      if (prefersReduced || !ref.current) return
-      const rect = ref.current.getBoundingClientRect()
-      const relX = e.clientX - (rect.left + rect.width / 2)
-      const relY = e.clientY - (rect.top + rect.height / 2)
-      gsap.to(ref.current, {
-        x: relX * strength,
-        y: relY * strength,
-        duration: 0.9,
-        ease: 'power3.out',
-      })
+      if (prefersReduced) return
+      const rect = rectRef.current
+      const s = setters.current
+      if (!rect || !s) return
+      s.x((e.clientX - (rect.left + rect.width / 2)) * strength)
+      s.y((e.clientY - (rect.top + rect.height / 2)) * strength)
     },
     [strength]
   )
@@ -36,6 +46,7 @@ export default function Magnetic({ children, strength = 0.35, className = '' }) 
   return (
     <div
       ref={ref}
+      onMouseEnter={onEnter}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       className={className}

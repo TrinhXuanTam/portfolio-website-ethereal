@@ -43,7 +43,9 @@ export default function Hero() {
     return () => ctx.revert()
   }, [])
 
-  // Gentle cursor parallax on the portrait (pointer-driven, no React re-render)
+  // Gentle cursor parallax on the portrait (pointer-driven, no React re-render).
+  // Runs the rAF only while the pointer is actually moving, then stops after a
+  // short idle — so a stationary cursor costs zero frames.
   useEffect(() => {
     if (prefersReduced || !portrait.current) return
     // Only lean on devices with a real hover pointer, so touch layouts are still.
@@ -51,15 +53,29 @@ export default function Hero() {
     const xTo = gsap.quickTo(portrait.current, 'x', { duration: 1.1, ease: 'power3.out' })
     const yTo = gsap.quickTo(portrait.current, 'y', { duration: 1.1, ease: 'power3.out' })
     const rTo = gsap.quickTo(portrait.current, 'rotateY', { duration: 1.1, ease: 'power3.out' })
-    let raf
+
+    let raf = 0
+    let idleFrames = 0
     const loop = () => {
       xTo(pointer.x * 14)
       yTo(-pointer.y * 10)
       rTo(pointer.x * 3)
+      // keep animating a little after the last move so the ease settles, then stop
+      if (++idleFrames > 40) {
+        raf = 0
+        return
+      }
       raf = requestAnimationFrame(loop)
     }
-    raf = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(raf)
+    const onMove = () => {
+      idleFrames = 0
+      if (!raf) raf = requestAnimationFrame(loop)
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      if (raf) cancelAnimationFrame(raf)
+    }
   }, [])
 
   // Family name on the first line, given name on the second.

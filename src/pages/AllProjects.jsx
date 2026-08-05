@@ -55,7 +55,7 @@ function Meta({ p, big = false }) {
           {p.tags.slice(0, big ? 4 : 3).map((t) => (
             <li
               key={t}
-              className="glass rounded-full px-3 py-1 text-[0.65rem] uppercase tracking-widest text-graphite/70"
+              className="pill rounded-full px-3 py-1 text-[0.65rem] uppercase tracking-widest text-graphite/70"
             >
               {t}
             </li>

@@ -31,15 +31,24 @@ export function bindPointer() {
   }
   window.addEventListener('pointermove', onMove, { passive: true })
 
+  // Cache the max scroll distance instead of reading scrollHeight on every
+  // scroll event (that read forces a synchronous reflow, which is costly under
+  // Lenis's high event rate). Recompute only on resize.
   let lastY = window.scrollY
+  let maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+  const recomputeMax = () => {
+    maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+  }
   const onScroll = () => {
     const y = window.scrollY
-    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
-    pointer.scrollN = Math.min(1, Math.max(0, y / max))
+    pointer.scrollN = Math.min(1, Math.max(0, y / maxScroll))
     // accumulate raw delta; the render loop eases scrollV back toward 0
     pointer.scrollV += (y - lastY) * 0.005
     pointer.scrollV = Math.max(-1.0, Math.min(1.0, pointer.scrollV))
     lastY = y
   }
   window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('resize', recomputeMax, { passive: true })
+  // content can grow after load (CMS/images); refresh the cached max a few times
+  ;[500, 1500, 3000].forEach((ms) => setTimeout(recomputeMax, ms))
 }

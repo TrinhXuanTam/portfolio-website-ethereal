@@ -90,11 +90,21 @@ html.lenis body {
   z-index: 1;
 }
 
-/* Ultra-refined glassmorphism */
+/* Lightweight pill for tags — solid, NO backdrop-filter. Used where many
+   instances repeat (project tag lists), so blur would multiply cost. */
+.pill {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Ultra-refined glassmorphism.
+   Backdrop-filter over the continuously-animating WebGL canvas is re-sampled
+   every frame, so blur radius is kept modest and saturate() dropped; the
+   slightly higher background opacity preserves the frosted look at lower cost. */
 .glass {
-  background: rgba(255, 255, 255, 0.42);
-  backdrop-filter: blur(18px) saturate(120%);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow:
     0 1px 1px rgba(43, 42, 40, 0.02),
@@ -102,9 +112,9 @@ html.lenis body {
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(24px) saturate(130%);
-  -webkit-backdrop-filter: blur(24px) saturate(130%);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.65);
   box-shadow:
     0 1px 1px rgba(43, 42, 40, 0.03),

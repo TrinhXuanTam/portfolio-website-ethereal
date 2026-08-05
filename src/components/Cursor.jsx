@@ -19,17 +19,31 @@ export default function Cursor() {
     const xTo = gsap.quickTo(el, 'x', { duration: 0.5, ease: 'power3.out' })
     const yTo = gsap.quickTo(el, 'y', { duration: 0.5, ease: 'power3.out' })
 
+    // Position updates every move (cheap GSAP transform). The label lookup +
+    // React setState is throttled and only fires when the value actually
+    // changes, so a plain mouse move never triggers a re-render.
+    let lastLabel = ''
+    let labelRaf = 0
     const onMove = (e) => {
       xTo(e.clientX)
       yTo(e.clientY)
-      const target = e.target.closest('[data-cursor]')
-      setLabel(target ? target.getAttribute('data-cursor') : '')
+      if (labelRaf) return
+      labelRaf = requestAnimationFrame(() => {
+        labelRaf = 0
+        const target = e.target.closest?.('[data-cursor]')
+        const next = target ? target.getAttribute('data-cursor') : ''
+        if (next !== lastLabel) {
+          lastLabel = next
+          setLabel(next)
+        }
+      })
     }
 
     document.body.style.cursor = 'none'
-    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointermove', onMove, { passive: true })
     return () => {
       window.removeEventListener('pointermove', onMove)
+      if (labelRaf) cancelAnimationFrame(labelRaf)
       document.body.style.cursor = ''
     }
   }, [])

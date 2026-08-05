@@ -1,5 +1,5 @@
-import { useRef, useMemo, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { useRef, useMemo } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 // Procedural gradient "artwork" per project (no raster assets) with a liquid
@@ -80,6 +80,10 @@ function Plane({ hoverRef, seed }) {
     [seed]
   )
 
+  const { invalidate } = useThree()
+  // expose invalidate so the outer DOM handlers can kick the on-demand loop
+  hoverRef.current.invalidate = invalidate
+
   useFrame((_, delta) => {
     if (!matRef.current) return
     const u = matRef.current.uniforms
@@ -88,6 +92,13 @@ function Plane({ hoverRef, seed }) {
     u.uHover.value += (hoverRef.current.active - u.uHover.value) * 0.08
     u.uMouse.value.x += (hoverRef.current.x - u.uMouse.value.x) * 0.1
     u.uMouse.value.y += (hoverRef.current.y - u.uMouse.value.y) * 0.1
+
+    // On-demand render loop: keep requesting frames only while the panel is
+    // hovered OR the hover ease is still settling. At rest it stops entirely,
+    // so idle/off-screen panels cost nothing (frameloop="demand").
+    if (hoverRef.current.active > 0.001 || u.uHover.value > 0.002) {
+      invalidate()
+    }
   })
 
   return (
@@ -106,20 +117,23 @@ function Plane({ hoverRef, seed }) {
 
 export default function ProjectArt({ seed = 0 }) {
   const hoverRef = useRef({ active: 0, x: 0.5, y: 0.5 })
-  const [, force] = useState(0)
 
+  // Cache the panel rect on enter (avoids getBoundingClientRect on every move).
+  const rectRef = useRef(null)
   const onMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect()
+    const rect = rectRef.current || e.currentTarget.getBoundingClientRect()
     hoverRef.current.x = (e.clientX - rect.left) / rect.width
     hoverRef.current.y = 1 - (e.clientY - rect.top) / rect.height
+    hoverRef.current.invalidate?.()
   }
-  const onEnter = () => {
+  const onEnter = (e) => {
+    rectRef.current = e.currentTarget.getBoundingClientRect()
     hoverRef.current.active = 1
-    force((n) => n + 1)
+    hoverRef.current.invalidate?.() // kick the on-demand loop
   }
   const onLeave = () => {
     hoverRef.current.active = 0
-    force((n) => n + 1)
+    hoverRef.current.invalidate?.() // let it render the ease-out then settle
   }
 
   return (
@@ -130,7 +144,8 @@ export default function ProjectArt({ seed = 0 }) {
       onPointerLeave={onLeave}
     >
       <Canvas
-        dpr={[1, 1.5]}
+        frameloop="demand"
+        dpr={1}
         gl={{ antialias: false, alpha: false }}
         camera={{ position: [0, 0, 1] }}
       >

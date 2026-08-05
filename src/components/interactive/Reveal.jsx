@@ -29,12 +29,14 @@ export default function Reveal({
     const targets = stagger > 0 ? Array.from(el.children) : [el]
 
     const ctx = gsap.context(() => {
-      gsap.set(targets, { opacity: 0, y, filter: 'blur(8px)' })
+      // Animate only opacity + transform (compositor-cheap). The former
+      // filter:blur animation forced a repaint every frame per element and,
+      // with stagger, ran many at once — a real jank source.
+      gsap.set(targets, { opacity: 0, y })
       gsap.to(targets, {
         opacity: 1,
         y: 0,
-        filter: 'blur(0px)',
-        duration: 1.3,
+        duration: 1.2,
         delay,
         ease: 'power3.out',
         stagger: stagger || 0,

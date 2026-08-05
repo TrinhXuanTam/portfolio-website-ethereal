@@ -33,11 +33,16 @@ export function useLenis() {
     gsap.ticker.add(raf)
     gsap.ticker.lagSmoothing(0)
 
-    // Async content (CMS data + lazy images) changes the page height after the
-    // ScrollTriggers are created, leaving their start/end positions stale — so
-    // triggers near the bottom (e.g. the Contact CTA) fire late and pop. Refresh
-    // measurements on load and whenever an image finishes decoding.
-    const refresh = () => ScrollTrigger.refresh()
+    // Async content (CMS data + lazy images) changes page height after the
+    // ScrollTriggers are created, leaving positions stale. ScrollTrigger.refresh()
+    // is a full, expensive layout recompute, so we DEBOUNCE it — many images
+    // finishing in a burst collapse into a single refresh (~200ms after the last
+    // one), instead of one costly refresh per image.
+    let refreshTimer = 0
+    const refresh = () => {
+      clearTimeout(refreshTimer)
+      refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 200)
+    }
     window.addEventListener('load', refresh)
     const onImg = (e) => {
       if (e.target && e.target.tagName === 'IMG') refresh()
@@ -50,6 +55,7 @@ export function useLenis() {
       gsap.ticker.remove(raf)
       window.removeEventListener('load', refresh)
       document.removeEventListener('load', onImg, true)
+      clearTimeout(refreshTimer)
       settle.forEach(clearTimeout)
       lenis.destroy()
       delete window.__lenis

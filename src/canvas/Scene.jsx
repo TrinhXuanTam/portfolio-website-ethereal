@@ -31,8 +31,11 @@ export default function Scene() {
 
   return (
     <div className="canvas-layer">
+      {/* The background is a soft, blurred gradient, so rendering it below 1
+          device-pixel is imperceptible but roughly halves the per-frame
+          fragment-shader cost — the dominant cost during scroll/mouse move. */}
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={0.75}
         gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 1] }}
       >
