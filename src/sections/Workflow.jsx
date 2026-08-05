@@ -66,7 +66,7 @@ export default function Workflow() {
   const accent = ACCENTS[active % ACCENTS.length]
 
   return (
-    <section id="workflow" ref={root} className="relative px-6 py-20 sm:px-10 sm:py-28 lg:px-20 lg:py-32">
+    <section id="workflow" ref={root} className="relative px-5 py-14 sm:px-10 sm:py-28 lg:px-20 lg:py-32">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal className="mb-12 max-w-3xl sm:mb-20">
           <SectionLabel>The process</SectionLabel>
@@ -92,11 +92,11 @@ export default function Workflow() {
                   >
                     <span
                       className="block font-serif leading-none tracking-tightest"
-                      style={{ fontSize: 'clamp(6rem,16vw,13rem)', color: accent }}
+                      style={{ fontSize: 'clamp(4rem,16vw,13rem)', color: accent }}
                     >
                       {s.no}
                     </span>
-                    <h3 className="mt-2 font-serif text-4xl font-medium text-ink">
+                    <h3 className="mt-2 font-serif text-3xl font-medium text-ink sm:text-4xl">
                       {s.name}
                     </h3>
                   </div>
@@ -134,7 +134,7 @@ export default function Workflow() {
               }}
             />
 
-            <ol className="space-y-14 sm:space-y-20">
+            <ol className="space-y-10 sm:space-y-20">
               {STEPS.map((s, i) => (
                 <li
                   key={s.no}
@@ -161,9 +161,9 @@ export default function Workflow() {
                   </span>
 
                   {/* per-step number/name (shown on mobile where the sticky panel is hidden) */}
-                  <div className="mb-4 flex items-baseline gap-3 lg:hidden">
+                  <div className="mb-3 flex items-baseline gap-3 lg:hidden">
                     <span className="font-serif text-sm text-ash">{s.no}</span>
-                    <h3 className="font-serif text-3xl font-medium text-ink">{s.name}</h3>
+                    <h3 className="font-serif text-2xl font-medium text-ink">{s.name}</h3>
                   </div>
 
                   {/* name on desktop too, smaller, so the right column reads on its own */}
@@ -171,14 +171,20 @@ export default function Workflow() {
                     {s.name}
                   </h3>
 
-                  <ul className="flex flex-col gap-2">
-                    {s.items.map((item) => (
+                  {/* Mobile: items wrap inline with hairline separators, so a
+                      4-item step is ~2 lines instead of 4 — much shorter scroll.
+                      lg+: one item per line, as before. */}
+                  <ul className="flex flex-wrap items-center gap-x-3 gap-y-2 lg:flex-col lg:items-start lg:gap-2">
+                    {s.items.map((item, k) => (
                       <li
                         key={item}
                         data-item
-                        className="text-base font-light text-graphite/80 sm:text-lg"
+                        className="flex items-center gap-3 text-base font-light text-graphite/80 sm:text-lg"
                       >
                         {item}
+                        {k < s.items.length - 1 && (
+                          <span aria-hidden className="h-3 w-px bg-graphite/20 lg:hidden" />
+                        )}
                       </li>
                     ))}
                   </ul>

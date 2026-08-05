@@ -100,7 +100,7 @@ export default function Services() {
   const [paused, setPaused] = useState(false)
 
   return (
-    <section id="services" className="relative overflow-hidden px-0 py-20 sm:py-28 lg:py-40">
+    <section id="services" className="relative overflow-hidden px-0 py-14 sm:py-28 lg:py-40">
       <div className="mx-auto mb-12 w-full max-w-6xl px-6 sm:mb-16 sm:px-10 lg:px-20">
         <Reveal className="max-w-3xl">
           <SectionLabel>What I do</SectionLabel>
@@ -122,9 +122,13 @@ export default function Services() {
         ))}
       </div>
 
-      {/* All three descriptions, always visible — this is where the info lives */}
-      <div className="mx-auto mt-14 w-full max-w-6xl px-6 sm:mt-20 sm:px-10 lg:px-20">
-        <div className="grid gap-8 md:grid-cols-3 md:gap-10">
+      {/* All three descriptions. Mobile: a swipeable snap-rail so the trio reads
+          as a short horizontal gallery instead of a tall stack. md+ : 3-col grid. */}
+      <div className="mx-auto mt-14 w-full max-w-6xl px-5 sm:mt-20 sm:px-10 lg:px-20">
+        <div
+          data-lenis-prevent
+          className="-mx-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:snap-none md:grid-cols-3 md:gap-10 md:overflow-visible md:px-0 md:pb-0"
+        >
           {SERVICES.cards.map((card, i) => {
             const cAccent = ACCENTS[i % ACCENTS.length]
             const on = active === i
@@ -132,7 +136,7 @@ export default function Services() {
               <div
                 key={card.label}
                 onMouseEnter={() => setActive(i)}
-                className="group relative pt-5 transition-all duration-500 ease-ethereal"
+                className="group relative w-[80%] shrink-0 snap-center pt-5 transition-all duration-500 ease-ethereal max-md:!opacity-100 md:w-auto"
                 style={{ opacity: on ? 1 : 0.7 }}
               >
                 <span className="absolute left-0 top-0 h-px w-full bg-graphite/15" />
@@ -156,6 +160,11 @@ export default function Services() {
             )
           })}
         </div>
+
+        {/* swipe affordance — mobile only */}
+        <p className="mt-4 flex items-center gap-2 text-xs uppercase tracking-widest text-ash md:hidden">
+          Swipe <span aria-hidden>→</span>
+        </p>
       </div>
     </section>
   )

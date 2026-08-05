@@ -6,6 +6,7 @@ import GlassButton from '../components/ui/GlassButton'
 import { fetchAbout, cachedPeek } from '../lib/cms'
 import { navigate } from '../lib/router'
 import { CONTACT } from '../data/content'
+import Footer from '../components/Footer'
 
 // "2024-06-01" → "Jun 2024"; null "to" → "Present".
 function fmt(date) {
@@ -113,7 +114,7 @@ export default function AboutPage() {
   }, [about])
 
   return (
-    <main className="relative min-h-screen px-6 pb-28 pt-32 sm:px-10 sm:pt-36 lg:px-20">
+    <main className="relative min-h-screen px-5 pb-20 pt-24 sm:px-10 sm:pb-28 sm:pt-36 lg:px-20">
       <div className="mx-auto w-full max-w-5xl">
         <Reveal className="mb-6">
           <button
@@ -235,7 +236,7 @@ export default function AboutPage() {
                       Education
                     </h2>
                     <p className="mt-3 text-sm font-light text-graphite/60">
-                      {about.education.length} programmes
+                      {about.education.length} institutions
                     </p>
                   </div>
                 </Reveal>
@@ -270,7 +271,7 @@ export default function AboutPage() {
                           <span
                             className="font-serif leading-none tracking-tightest"
                             style={{
-                              fontSize: 'clamp(4rem,10vw,8rem)',
+                              fontSize: 'clamp(2.75rem,10vw,8rem)',
                               color: 'transparent',
                               WebkitTextStroke: `1.5px ${accent}`,
                             }}
@@ -296,6 +297,8 @@ export default function AboutPage() {
             )}
           </div>
         )}
+
+        <Footer className="mt-24 sm:mt-32" />
       </div>
     </main>
   )

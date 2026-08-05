@@ -2,6 +2,7 @@ import { CONTACT } from '../data/content'
 import Reveal from '../components/interactive/Reveal'
 import GlassButton from '../components/ui/GlassButton'
 import SocialIcon from '../components/ui/SocialIcon'
+import Footer from '../components/Footer'
 import { useCmsData } from '../lib/useCmsData'
 import { fetchContact } from '../lib/cms'
 
@@ -85,15 +86,7 @@ export default function Contact() {
         </div>
       </Reveal>
 
-      <footer className="mx-auto mt-24 w-full max-w-6xl border-t border-graphite/10 pt-8">
-        <div className="flex flex-col items-center justify-between gap-4 text-xs uppercase tracking-widest text-ash sm:flex-row">
-          <span className="font-serif normal-case tracking-tight text-graphite">
-            Trinh Xuan Tam
-          </span>
-          <span>Paris, France</span>
-          <span>© {new Date().getFullYear()} — All rights reserved</span>
-        </div>
-      </footer>
+      <Footer className="mt-24" />
     </section>
   )
 }

@@ -5,6 +5,7 @@ import GlassButton from '../components/ui/GlassButton'
 import Lightbox from '../components/Lightbox'
 import { fetchProject, cachedPeek } from '../lib/cms'
 import { navigate } from '../lib/router'
+import Footer from '../components/Footer'
 
 // Strapi richtext arrives as markdown-ish text; render paragraphs simply.
 function RichText({ text }) {
@@ -97,7 +98,7 @@ export default function ProjectDetail({ id }) {
   const p = state.project
 
   return (
-    <main className="relative min-h-screen px-6 pb-28 pt-32 sm:px-10 sm:pt-36 lg:px-20">
+    <main className="relative min-h-screen px-5 pb-20 pt-24 sm:px-10 sm:pb-28 sm:pt-36 lg:px-20">
       <div className="mx-auto w-full max-w-5xl">
         <Reveal className="mb-10">{back}</Reveal>
 
@@ -176,6 +177,8 @@ export default function ProjectDetail({ id }) {
         <Reveal className="mt-24 flex justify-center">
           <GlassButton onClick={() => navigate('/projects')}>Back to all projects</GlassButton>
         </Reveal>
+
+        <Footer className="mt-24 sm:mt-32" />
       </div>
 
       {/* Fullscreen gallery lightbox */}

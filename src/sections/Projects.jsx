@@ -54,7 +54,7 @@ function ProjectRow({ p, index }) {
     <Reveal y={50}>
       <article
         className={
-          'grid items-center gap-8 lg:grid-cols-12 lg:gap-16 ' +
+          'grid items-center gap-5 sm:gap-8 lg:grid-cols-12 lg:gap-16 ' +
           (flip ? 'lg:[direction:rtl]' : '')
         }
       >
@@ -66,7 +66,7 @@ function ProjectRow({ p, index }) {
             onClick={openDetail}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            className="group relative block aspect-[16/11] w-full overflow-hidden rounded-3xl transition-transform duration-[1.1s] ease-ethereal"
+            className="group relative block aspect-[16/10] w-full overflow-hidden rounded-2xl transition-transform duration-[1.1s] ease-ethereal sm:aspect-[16/11] sm:rounded-3xl"
             style={{ transform: active ? 'scale(1.03)' : 'scale(1)' }}
             data-cursor="View"
           >
@@ -102,12 +102,6 @@ function ProjectRow({ p, index }) {
             )}
 
             <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/40" />
-            <span
-              className="pointer-events-none absolute left-6 top-6 font-serif text-5xl text-white/90 sm:text-6xl"
-              style={{ textShadow: '0 2px 18px rgba(43,42,40,0.35)' }}
-            >
-              {p.no}
-            </span>
           </button>
         </div>
 
@@ -118,15 +112,15 @@ function ProjectRow({ p, index }) {
             data-cursor="View"
             className="group/title text-left outline-none"
           >
-            <h3 className="font-serif text-3xl font-medium leading-tight text-ink transition-colors duration-300 group-hover/title:text-graphite sm:text-4xl">
+            <h3 className="font-serif text-2xl font-medium leading-tight text-ink transition-colors duration-300 group-hover/title:text-graphite sm:text-4xl">
               {p.name}
             </h3>
           </button>
-          <p className="mt-5 text-base font-light leading-relaxed text-graphite/75">
+          <p className="mt-4 text-sm font-light leading-relaxed text-graphite/75 sm:mt-5 sm:text-base">
             {p.body}
           </p>
           {p.tags.length > 0 && (
-            <ul className="mt-8 flex flex-wrap gap-2">
+            <ul className="mt-5 flex flex-wrap gap-2 sm:mt-8">
               {p.tags.map((t) => (
                 <li
                   key={t}
@@ -140,7 +134,7 @@ function ProjectRow({ p, index }) {
           <button
             onClick={openDetail}
             data-cursor="View"
-            className="mt-7 inline-flex items-center gap-2 text-sm uppercase tracking-widest text-graphite/70 transition-colors duration-300 hover:text-ink"
+            className="mt-5 inline-flex items-center gap-2 text-sm uppercase tracking-widest text-graphite/70 transition-colors duration-300 hover:text-ink sm:mt-7"
           >
             View project
             <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
@@ -157,7 +151,7 @@ export default function Projects() {
   const projects = all.slice(0, LANDING_COUNT)
 
   return (
-    <section id="projects" className="relative px-6 py-20 sm:px-10 sm:py-28 lg:px-20 lg:py-48">
+    <section id="projects" className="relative px-5 py-14 sm:px-10 sm:py-28 lg:px-20 lg:py-48">
       <div className="mx-auto w-full max-w-6xl">
         <Reveal className="mb-12 flex flex-wrap items-end justify-between gap-6 sm:mb-20">
           <div className="max-w-3xl">
@@ -176,9 +170,9 @@ export default function Projects() {
           </button>
         </Reveal>
 
-        <div className="space-y-28 lg:space-y-40">
+        <div className="space-y-16 sm:space-y-28 lg:space-y-40">
           {projects.map((p, i) => (
-            <ProjectRow key={p.id} p={{ ...p, no: String(i + 1).padStart(2, '0') }} index={i} />
+            <ProjectRow key={p.id} p={p} index={i} />
           ))}
         </div>
 
