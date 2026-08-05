@@ -13,6 +13,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import RouteTransition from './components/RouteTransition'
+import ScrollProgress from './components/ScrollProgress'
 import { useLenis } from './lib/useLenis'
 import { bindPointer } from './lib/pointer'
 import { useHashRoute } from './lib/router'
@@ -55,6 +56,9 @@ export default function App() {
 
       {/* Veil that masks the brief flash on every route change */}
       <RouteTransition routeKey={`${route.name}:${route.id || ''}`} />
+
+      {/* Hairline scroll-progress line — on every route (keyed so it resets) */}
+      <ScrollProgress key={`${route.name}:${route.id || ''}`} />
 
       {/* Layer 1 — routed DOM UI overlaying the canvas */}
       <div className="dom-layer">

@@ -1,0 +1,25 @@
+name: publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: trinhxuantam/portfolio-website-ethereal:latest
+
+jobs:
+  publish:
+    name: publish image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        run: echo ${{ secrets.PERSONAL_ACCESS_TOKEN }} | docker login ghcr.io -u trinhxuantam --password-stdin
+
+      - name: Build and publish Docker image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
