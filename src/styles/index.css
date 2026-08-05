@@ -19,6 +19,10 @@ body {
 html {
   /* Lenis manages scroll; keep native anchor jumps smooth as fallback */
   scroll-behavior: auto;
+  /* Paint the base colour on html too, so the strip the mobile address bar
+     vacates shows alabaster (not the browser's default white) if a fixed
+     element hasn't repainted it yet. */
+  background-color: var(--page-bg);
 }
 
 body {
@@ -48,19 +52,20 @@ html.lenis body {
 /* The fixed WebGL canvas layer sits behind all DOM */
 .canvas-layer {
   position: fixed;
-  inset: 0;
-  /* On mobile the address bar shows/hides, changing the viewport height. A
-     plain inset:0 fixed layer briefly leaves a gap at the bottom during that
-     transition. Pin to the largest ("large") viewport height so the canvas
-     always covers past the address-bar area — plus a small safety overscan. */
-  top: -2px;
+  /* On mobile the address bar shows/hides as you scroll (both directions),
+     changing the visual viewport height. CSS viewport units don't update
+     smoothly mid-animation, so a snugly-fitted fixed layer briefly reveals an
+     edge. We over-scan the canvas well beyond the viewport on every side so no
+     bar state — growing or shrinking — can ever uncover a gap. */
+  top: -8vh;
   left: 0;
   width: 100vw;
-  height: 100vh; /* fallback */
-  height: 100lvh; /* large viewport height — ignores the retracting URL bar */
-  min-height: 101%;
+  height: 116vh; /* fallback */
+  height: 116lvh; /* covers past the address bar in either direction */
   z-index: 0;
   pointer-events: none;
+  /* base fill behind the WebGL canvas, so any un-repainted strip matches */
+  background-color: var(--page-bg);
 }
 
 .dom-layer {
