@@ -49,6 +49,16 @@ html.lenis body {
 .canvas-layer {
   position: fixed;
   inset: 0;
+  /* On mobile the address bar shows/hides, changing the viewport height. A
+     plain inset:0 fixed layer briefly leaves a gap at the bottom during that
+     transition. Pin to the largest ("large") viewport height so the canvas
+     always covers past the address-bar area — plus a small safety overscan. */
+  top: -2px;
+  left: 0;
+  width: 100vw;
+  height: 100vh; /* fallback */
+  height: 100lvh; /* large viewport height — ignores the retracting URL bar */
+  min-height: 101%;
   z-index: 0;
   pointer-events: none;
 }
