@@ -4,6 +4,8 @@
 
 :root {
   --page-bg: #f3f1eb;
+  /* the color the browser paints in the address-bar region on mobile */
+  background-color: #f3f1eb;
 }
 
 * {
@@ -14,6 +16,15 @@ html,
 body {
   margin: 0;
   padding: 0;
+  min-height: 100%;
+  background-color: #f3f1eb;
+}
+
+/* React mount point must also carry the base color and fill the height, so no
+   white shows below content or in the mobile address-bar gap */
+#root {
+  min-height: 100dvh;
+  background-color: #f3f1eb;
 }
 
 html {
@@ -32,6 +43,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  /* prevent the browser from exposing a bounce/underflow area at the edges as
+     the mobile address bar animates */
+  overscroll-behavior-y: none;
 }
 
 /* Lenis smooth-scroll wiring */
@@ -57,11 +71,14 @@ html.lenis body {
      smoothly mid-animation, so a snugly-fitted fixed layer briefly reveals an
      edge. We over-scan the canvas well beyond the viewport on every side so no
      bar state — growing or shrinking — can ever uncover a gap. */
-  top: -8vh;
+  top: 0;
   left: 0;
   width: 100vw;
-  height: 116vh; /* fallback */
-  height: 116lvh; /* covers past the address bar in either direction */
+  /* Cover the viewport at all bar states. dvh tracks the address bar as it
+     animates; the large fallbacks over-scan so older engines never gap. */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100lvh;
   z-index: 0;
   pointer-events: none;
   /* base fill behind the WebGL canvas, so any un-repainted strip matches */
