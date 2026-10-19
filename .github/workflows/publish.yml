@@ -1,47 +1,79 @@
-name: publish and deploy
+name: Build and deploy
 
 on:
+  pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: trinhxuantam/portfolio-website-ethereal:latest
+permissions:
+  contents: read
+
+# Serialize production runs, including builds, so an older build cannot deploy last.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
-    name: publish image
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to GitHub Container Registry
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check deployment script syntax
         run: |
-          echo "${{ secrets.PERSONAL_ACCESS_TOKEN }}" | docker login ghcr.io \
-            -u trinhxuantam \
-            --password-stdin
-
-      - name: Build and publish Docker image
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-  deploy:
-    name: deploy to VPS
-    needs: publish
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+          bash -n scripts/deploy.sh
+          python3 scripts/test_deploy.py
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /root/apps/portfolio_website_ethereal
-            docker compose pull
-            docker compose up -d --remove-orphans
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build ARM64 image; publish only from main
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+          tags: ghcr.io/trinhxuantam/portfolio-website-ethereal:sha-${{ github.sha }}
+          labels: org.opencontainers.image.source=https://github.com/TrinhXuanTam/portfolio-website-ethereal
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: VITE_CMS_URL=${{ vars.VITE_CMS_URL || 'https://cms.trinhxuantam.com' }}
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          cp .github/oracle_known_hosts ~/.ssh/known_hosts
+      - name: Deploy exact image digest and verify health
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          IMAGE: ghcr.io/trinhxuantam/portfolio-website-ethereal@${{ needs.build.outputs.digest }}
+        run: |
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o HostKeyAlias=130.61.17.71 -o ConnectTimeout=15 \
+            "$VPS_USERNAME@$VPS_HOST" bash -s -- \
+            /home/ubuntu/apps/portfolio_website_ethereal portfolio-website-ethereal "$IMAGE" < scripts/deploy.sh
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

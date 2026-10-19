@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+**/node_modules
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+.next
+dist
+build
+.cache
+.tmp
+*.log
+*.pem
+*.key
