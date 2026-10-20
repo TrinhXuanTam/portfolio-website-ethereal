@@ -55,6 +55,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: production
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Configure SSH
@@ -69,10 +72,21 @@ jobs:
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IMAGE: ghcr.io/trinhxuantam/portfolio-website-ethereal@${{ needs.build.outputs.digest }}
         run: |
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o HostKeyAlias=130.61.17.71 -o ConnectTimeout=15 \
-            "$VPS_USERNAME@$VPS_HOST" bash -s -- \
+          ssh_options=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o HostKeyAlias=130.61.17.71 -o ConnectTimeout=15)
+          target="$VPS_USERNAME@$VPS_HOST"
+          remote_config=$(ssh "${ssh_options[@]}" "$target" mktemp -d /tmp/ethereal-ghcr.XXXXXXXX)
+          [[ "$remote_config" =~ ^/tmp/ethereal-ghcr\.[a-zA-Z0-9]+$ ]]
+          cleanup() {
+            ssh "${ssh_options[@]}" "$target" "rm -f '$remote_config/config.json'; rmdir '$remote_config'"
+          }
+          trap cleanup EXIT
+          printf '%s\n' "$GHCR_TOKEN" | ssh "${ssh_options[@]}" "$target" \
+            docker --config "$remote_config" login ghcr.io -u TrinhXuanTam --password-stdin
+          unset GHCR_TOKEN
+          ssh "${ssh_options[@]}" "$target" env DOCKER_CONFIG="$remote_config" bash -s -- \
             /home/ubuntu/apps/portfolio_website_ethereal portfolio-website-ethereal "$IMAGE" < scripts/deploy.sh
       - name: Remove SSH key
         if: always()
